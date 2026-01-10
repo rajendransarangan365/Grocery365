@@ -203,63 +203,90 @@ const Products = () => {
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             {/* Basic Info */}
-                            <input type="text" name="name" placeholder="Product Name" value={formData.name} onChange={handleInputChange} className="w-full bg-gray-50 border-none p-3 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none" required />
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Product Name</label>
+                                <input type="text" name="name" placeholder="E.g. Milk Bikis" value={formData.name} onChange={handleInputChange} className="w-full bg-gray-50 border-none p-3 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none font-bold" required />
+                            </div>
 
                             <div className="flex gap-4">
-                                <select name="unit" value={formData.unit} onChange={handleInputChange} className="w-1/2 bg-gray-50 border-none p-3 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none">
-                                    <option value="pcs">Pieces</option>
-                                    <option value="nos">Nos</option>
-                                    <option value="kg">Kg</option>
-                                    <option value="l">Liters</option>
-                                </select>
-                                <input type="number" name="sellingPrice" placeholder="Selling Price (₹)" value={formData.sellingPrice} onChange={handleInputChange} className="w-1/2 bg-gray-50 border-none p-3 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none" required />
+                                <div className="w-1/2">
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Unit Type</label>
+                                    <select name="unit" value={formData.unit} onChange={handleInputChange} className="w-full bg-gray-50 border-none p-3 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none">
+                                        <option value="pcs">Pieces</option>
+                                        <option value="nos">Nos</option>
+                                        <option value="kg">Kg</option>
+                                        <option value="l">Liters</option>
+                                    </select>
+                                </div>
+                                <div className="w-1/2">
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Selling Price</label>
+                                    <input type="number" name="sellingPrice" placeholder="0.00" value={formData.sellingPrice} onChange={handleInputChange} className="w-full bg-gray-50 border-none p-3 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none font-mono font-bold" required />
+                                </div>
                             </div>
 
                             {/* Distributors & Cost Prices */}
                             <div className="space-y-3 pt-2">
                                 <div className="flex justify-between items-center">
                                     <label className="text-xs font-bold text-gray-500 uppercase">Distributors & Cost</label>
-                                    <button type="button" onClick={addSupplyOption} className="text-xs font-bold text-blue-600 hover:underline">+ Add Option</button>
+                                    <button type="button" onClick={addSupplyOption} className="text-xs font-bold text-blue-600 hover:underline bg-blue-50 px-2 py-1 rounded">+ Add Option</button>
                                 </div>
+
+                                <div className="grid grid-cols-10 gap-2 px-1 mb-1">
+                                    <span className="col-span-4 text-[10px] font-bold text-gray-400 uppercase">Source</span>
+                                    <span className="col-span-3 text-[10px] font-bold text-gray-400 uppercase">Cost (₹)</span>
+                                    <span className="col-span-2 text-[10px] font-bold text-gray-400 uppercase">Stock</span>
+                                </div>
+
                                 {supplyOptions.map((opt, idx) => (
-                                    <div key={idx} className="flex gap-2 items-center animate-in slide-in-from-top-2 duration-200">
-                                        <select
-                                            value={opt.distributor}
-                                            onChange={(e) => handleSupplyChange(idx, 'distributor', e.target.value)}
-                                            className="flex-1 bg-gray-50 border-none p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none"
-                                            required
-                                        >
-                                            <option value="">Select Distributor</option>
-                                            {distributors.map(d => (
-                                                <option key={d._id} value={d._id}>{d.name}</option>
-                                            ))}
-                                        </select>
-                                        <input
-                                            type="number"
-                                            placeholder="Cost"
-                                            value={opt.costPrice || ''}
-                                            onChange={(e) => handleSupplyChange(idx, 'costPrice', e.target.value)}
-                                            className="w-20 bg-gray-50 border-none p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none"
-                                            required
-                                        />
-                                        <input
-                                            type="number"
-                                            placeholder="Qty"
-                                            value={opt.stock || ''}
-                                            onChange={(e) => handleSupplyChange(idx, 'stock', e.target.value)}
-                                            className="w-16 bg-gray-50 border-none p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none"
-                                            required
-                                        />
-                                        {supplyOptions.length > 1 && (
-                                            <button type="button" onClick={() => removeSupplyOption(idx)} className="text-red-400 hover:text-red-600 p-1">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        )}
+                                    <div key={idx} className="grid grid-cols-10 gap-2 items-center animate-in slide-in-from-top-2 duration-200">
+                                        <div className="col-span-4">
+                                            <select
+                                                value={opt.distributor}
+                                                onChange={(e) => handleSupplyChange(idx, 'distributor', e.target.value)}
+                                                className="w-full bg-gray-50 border-none p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none"
+                                                required
+                                            >
+                                                <option value="">Select...</option>
+                                                {distributors.map(d => (
+                                                    <option key={d._id} value={d._id}>{d.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="col-span-3">
+                                            <input
+                                                type="number"
+                                                placeholder="0.00"
+                                                value={opt.costPrice || ''}
+                                                onChange={(e) => handleSupplyChange(idx, 'costPrice', e.target.value)}
+                                                className="w-full bg-gray-50 border-none p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <input
+                                                type="number"
+                                                placeholder="0"
+                                                value={opt.stock || ''}
+                                                onChange={(e) => handleSupplyChange(idx, 'stock', e.target.value)}
+                                                className="w-full bg-gray-50 border-none p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="col-span-1 flex justify-center">
+                                            {supplyOptions.length > 1 && (
+                                                <button type="button" onClick={() => removeSupplyOption(idx)} className="text-red-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>
 
-                            <input type="text" name="category" placeholder="Category" value={formData.category} onChange={handleInputChange} className="w-full bg-gray-50 border-none p-3 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none" />
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Category</label>
+                                <input type="text" name="category" placeholder="E.g. Biscuits" value={formData.category} onChange={handleInputChange} className="w-full bg-gray-50 border-none p-3 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none" />
+                            </div>
 
                             <div className="pt-2">
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Product Image {editingProduct && '(Leave empty to keep existing)'}</label>

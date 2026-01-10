@@ -66,7 +66,6 @@ const Layout = () => {
                     <div className="my-4 border-t border-gray-100 mx-6"></div>
                     <SidebarItem to="/products" icon={Package} label="Products" />
                     <SidebarItem to="/customers" icon={Users} label="Customers" />
-                    <SidebarItem to="/customers" icon={Users} label="Customers" />
                     <SidebarItem to="/distributors" icon={Truck} label="Distributors" />
                     <div className="mt-auto">
                         <SidebarItem to="/settings" icon={ClipboardList} label="Bill Settings" />
