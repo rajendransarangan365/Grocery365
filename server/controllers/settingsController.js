@@ -41,6 +41,7 @@ export const updateSettings = async (req, res) => {
         settings.footerMessage = req.body.footerMessage || settings.footerMessage;
         settings.whatsappHeader = req.body.whatsappHeader || settings.whatsappHeader;
         settings.whatsappFooter = req.body.whatsappFooter || settings.whatsappFooter;
+        settings.billFormat = req.body.billFormat || settings.billFormat;
 
         const updatedSettings = await settings.save();
         res.json(updatedSettings);

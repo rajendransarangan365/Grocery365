@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Save, Building, Phone, Mail, Globe, FileText, Type, Smartphone } from 'lucide-react';
+import { Save, Building, Phone, Mail, Globe, FileText, Type, Smartphone, Printer } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Settings = () => {
@@ -112,7 +112,34 @@ const Settings = () => {
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Footer Message</label>
-                                <input name="footerMessage" value={settings.footerMessage} onChange={handleChange} className="w-full bg-gray-50 border-none p-3 rounded-lg text-sm" />
+                                <input name="footerMessage" value={settings.footerMessage || ''} onChange={handleChange} className="w-full bg-gray-50 border-none p-3 rounded-lg text-sm" />
+                            </div>
+
+                            <div className="pt-4 border-t border-gray-100 mt-4">
+                                <h4 className="font-bold text-sm flex items-center gap-2 mb-3"><Printer size={16} /> Bill Configuration</h4>
+                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Paper Format</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setSettings(prev => ({ ...prev, billFormat: 'A4' }))}
+                                        className={`p-4 rounded-xl border-2 text-left transition-all ${settings.billFormat === 'A4'
+                                            ? 'border-black bg-black text-white'
+                                            : 'border-gray-100 bg-white hover:border-gray-200'}`}
+                                    >
+                                        <div className="font-bold text-sm">Standard A4</div>
+                                        <div className={`text-xs mt-1 ${settings.billFormat === 'A4' ? 'text-gray-400' : 'text-gray-500'}`}>Regular Printer</div>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSettings(prev => ({ ...prev, billFormat: 'Thermal' }))}
+                                        className={`p-4 rounded-xl border-2 text-left transition-all ${settings.billFormat === 'Thermal'
+                                            ? 'border-black bg-black text-white'
+                                            : 'border-gray-100 bg-white hover:border-gray-200'}`}
+                                    >
+                                        <div className="font-bold text-sm">Thermal (80mm)</div>
+                                        <div className={`text-xs mt-1 ${settings.billFormat === 'Thermal' ? 'text-gray-400' : 'text-gray-500'}`}>POS Receipt</div>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -129,8 +156,8 @@ const Settings = () => {
                     {/* Tabs or Toggles could go here, for now stacking them */}
 
                     {/* Bill Preview */}
-                    <h3 className="font-bold text-gray-500 text-xs uppercase tracking-wider">Live Bill Preview</h3>
-                    <div className="bg-white p-8 rounded-none shadow-xl border border-gray-200 min-h-[400px] flex flex-col font-mono text-gray-800 text-xs leading-relaxed relative scale-95 origin-top-left w-full">
+                    <h3 className="font-bold text-gray-500 text-xs uppercase tracking-wider">Live Bill Preview ({settings.billFormat || 'A4'})</h3>
+                    <div className={`bg-white rounded-none shadow-xl border border-gray-200 min-h-[400px] flex flex-col font-mono text-gray-800 leading-relaxed relative scale-95 origin-top-left transition-all duration-500 ease-in-out ${settings.billFormat === 'Thermal' ? 'w-[300px] text-[10px] p-4' : 'w-full text-xs p-12'}`}>
                         {/* Paper Texture Effect */}
                         <div className="absolute inset-0 bg-neutral-50 mix-blend-multiply opacity-50 pointer-events-none"></div>
 

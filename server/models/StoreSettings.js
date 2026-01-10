@@ -10,7 +10,8 @@ const storeSettingsSchema = new mongoose.Schema({
     gstin: { type: String, default: '' },
     footerMessage: { type: String, default: 'Thank you for shopping with us!' },
     whatsappHeader: { type: String, default: '🛒 Bill from {storeName}' },
-    whatsappFooter: { type: String, default: 'Thank you for shopping with us!' }
+    whatsappFooter: { type: String, default: 'Thank you for shopping with us!' },
+    billFormat: { type: String, enum: ['A4', 'Thermal'], default: 'A4' }
 }, { timestamps: true });
 
 const StoreSettings = mongoose.model('StoreSettings', storeSettingsSchema);

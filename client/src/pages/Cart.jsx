@@ -120,92 +120,144 @@ const Cart = () => {
     };
 
     const generateBill = (saleData) => {
-        const doc = new jsPDF();
+        const isThermal = storeSettings.billFormat === 'Thermal';
+
+        // Config based on format
+        const config = isThermal ? {
+            format: [80, 2000], // 80mm width, long height for roll
+            unit: 'mm',
+            centerX: 40,
+            margin: 2,
+            fontSize: { title: 16, normal: 8, small: 7 }
+        } : {
+            format: 'a4',
+            unit: 'mm',
+            centerX: 105,
+            margin: 14,
+            fontSize: { title: 22, normal: 10, small: 9 }
+        };
+
+        const doc = new jsPDF({ unit: 'mm', format: config.format });
+
+        // Helper to center text
+        const centerText = (text, y, size = config.fontSize.normal, fStyle = 'normal') => {
+            doc.setFontSize(size);
+            doc.setFont("helvetica", fStyle);
+            doc.text(text, config.centerX, y, { align: "center" });
+        };
+
+        let yPos = isThermal ? 10 : 20;
 
         // Header
-        doc.setFontSize(22);
-        doc.text(storeSettings.storeName, 105, 20, { align: "center" });
-        doc.setFontSize(10);
-        doc.text(storeSettings.tagline, 105, 26, { align: "center" });
+        centerText(storeSettings.storeName, yPos, config.fontSize.title, 'bold');
+        yPos += isThermal ? 5 : 6;
+        centerText(storeSettings.tagline, yPos, config.fontSize.normal);
+        yPos += 5;
 
-        // Address Line (if exists)
+        // Address & Contact
         if (storeSettings.address) {
-            doc.setFontSize(9);
-            doc.text(storeSettings.address, 105, 31, { align: "center" });
+            centerText(storeSettings.address, yPos, config.fontSize.small);
+            yPos += 4;
         }
 
-        // Contact Line
         let contactText = '';
-        if (storeSettings.phone) contactText += `Phone: ${storeSettings.phone} `;
-        if (storeSettings.email) contactText += `| Email: ${storeSettings.email}`;
+        if (storeSettings.phone) contactText += isThermal ? `Ph: ${storeSettings.phone}` : `Phone: ${storeSettings.phone}`;
+        if (!isThermal && storeSettings.email) contactText += ` | Email: ${storeSettings.email}`;
+
         if (contactText) {
-            doc.setFontSize(9);
-            // Adjust Y based on address presence
-            const contactY = storeSettings.address ? 36 : 31;
-            doc.text(contactText, 105, contactY, { align: "center" });
+            centerText(contactText, yPos, config.fontSize.small);
+            yPos += isThermal ? 4 : 6;
         }
 
+        // Line Divider
+        doc.line(config.margin, yPos, isThermal ? 78 : 200, yPos);
+        yPos += 6;
 
-        doc.line(10, 42, 200, 42);
+        // Info Block
+        doc.setFontSize(config.fontSize.small);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, config.margin, yPos);
+        if (!isThermal) doc.text(new Date().toLocaleTimeString(), config.margin + 40, yPos);
 
-        // Info
-        doc.setFontSize(10);
-        doc.text(`Date: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 14, 50);
+        if (isThermal && storeSettings.gstin) {
+            yPos += 4;
+            doc.text(`GST: ${storeSettings.gstin}`, config.margin, yPos);
+        } else if (storeSettings.gstin) {
+            doc.text(`GSTIN: ${storeSettings.gstin}`, 150, yPos);
+        }
 
+        yPos += isThermal ? 4 : 6;
         if (customerId) {
             const cust = customers.find(c => c._id === customerId);
-            if (cust) {
-                doc.text(`Customer: ${cust.name}`, 14, 56);
-                doc.text(`Phone: ${cust.phone}`, 14, 62);
-            }
+            doc.text(`${cust ? cust.name : 'Guest'}`, config.margin, yPos);
         } else {
-            doc.text(`Customer: Guest`, 14, 56);
+            doc.text(`Guest`, config.margin, yPos);
         }
-
-        if (storeSettings.gstin) {
-            doc.text(`GSTIN: ${storeSettings.gstin}`, 150, 50);
-        }
+        yPos += 4;
 
         // Table
         const tableColumn = ["Item", "Qty", "Price", "Total"];
         const tableRows = [];
 
         saleData.products.forEach(item => {
-            const productData = verifiedItems.find(p => p._id === item.product); // Get name from UI state
+            const productData = verifiedItems.find(p => p._id === item.product);
             const unit = productData ? productData.unit : '';
             const name = productData ? productData.name : 'Unknown';
             const price = productData ? productData.sellingPrice : 0;
 
+            // For thermal, truncate name if too long
+            const displayName = isThermal && name.length > 15 ? name.substring(0, 15) + '..' : name;
+
             tableRows.push([
-                name,
-                `${item.qty} ${unit}`,
-                `Rs. ${price}`,
-                `Rs. ${(price * item.qty).toFixed(2)}`
+                displayName,
+                `${item.qty}${isThermal ? '' : ' ' + unit}`,
+                price,
+                (price * item.qty).toFixed(2)
             ]);
         });
 
         autoTable(doc, {
             head: [tableColumn],
             body: tableRows,
-            startY: 70, // Push down to avoid overlap
-            theme: 'grid',
-            styles: { fontSize: 10 },
-            headStyles: { fillColor: [0, 0, 0] }
+            startY: yPos + 2,
+            theme: isThermal ? 'plain' : 'grid', // Plain for thermal looks better usually
+            styles: { fontSize: isThermal ? 8 : 10, cellPadding: isThermal ? 1 : 2, overflow: 'linebreak' },
+            headStyles: { fillColor: isThermal ? [255, 255, 255] : [0, 0, 0], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: isThermal ? { bottom: 0.1 } : 0 },
+            columnStyles: {
+                0: { cellWidth: isThermal ? 25 : 'auto' }, // Item
+                1: { cellWidth: isThermal ? 15 : 'auto', halign: 'center' }, // Qty
+                2: { cellWidth: isThermal ? 15 : 'auto', halign: 'right' }, // Price
+                3: { cellWidth: isThermal ? 20 : 'auto', halign: 'right' }  // Total
+            },
+            margin: { left: config.margin, right: config.margin }
         });
 
         // Totals
-        const finalY = doc.lastAutoTable.finalY + 10;
-        doc.setFontSize(14);
+        const finalY = doc.lastAutoTable.finalY + (isThermal ? 5 : 10);
+
+        doc.setFontSize(isThermal ? 10 : 14);
         doc.setFont("helvetica", "bold");
-        doc.text(`Total Amount: Rs. ${saleData.totalAmount.toFixed(2)}`, 140, finalY, { align: "right" });
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Payment Mode: ${paymentMethod}`, 140, finalY + 6, { align: "right" });
+
+        const rightX = isThermal ? 75 : 190;
+        doc.text(`Total: Rs. ${saleData.totalAmount.toFixed(2)}`, rightX, finalY, { align: "right" });
+
+        if (isThermal) {
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Mode: ${paymentMethod}`, rightX, finalY + 5, { align: "right" });
+        } else {
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Payment Mode: ${paymentMethod}`, 140, finalY + 6, { align: "right" });
+        }
 
         // Footer Message
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "italic");
-        doc.text(storeSettings.footerMessage, 105, finalY + 20, { align: "center" });
+        const footerY = finalY + (isThermal ? 15 : 20);
+        centerText(storeSettings.footerMessage, footerY, isThermal ? 8 : 9, 'italic');
+
+        // Cut line for thermal
+        if (isThermal) {
+            doc.text('- - - - - - - - - - - - - - - - - -', config.centerX, footerY + 5, { align: 'center' });
+        }
 
         // Save
         doc.save(`Invoice_${Date.now()}.pdf`);
