@@ -180,3 +180,73 @@ export const getSalesAnalytics = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+// @desc    Get sales history (paginated/limited/filtered)
+// @route   GET /api/sales/history
+export const getSalesHistory = async (req, res) => {
+    try {
+        const { date, trash } = req.query;
+        let query = {};
+
+        // 1. Filter by Bin Status
+        if (trash === 'true') {
+            query.isDeleted = true;
+        } else {
+            // Match false OR undefined (legacy data)
+            query.isDeleted = { $ne: true };
+        }
+
+        // 2. Filter by Date (if provided)
+        if (date) {
+            const startDate = new Date(date);
+            startDate.setHours(0, 0, 0, 0);
+
+            const endDate = new Date(date);
+            endDate.setHours(23, 59, 59, 999);
+
+            query.createdAt = { $gte: startDate, $lte: endDate };
+        }
+
+        const sales = await Sale.find(query)
+            .populate('customerId', 'name phone')
+            .populate('products.product', 'name unit')
+            .sort({ createdAt: -1 })
+            .limit(100);
+
+        res.json(sales);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Toggle Trash Status (Soft Delete / Restore)
+// @route   PUT /api/sales/:id/trash
+export const toggleSaleTrash = async (req, res) => {
+    try {
+        const sale = await Sale.findById(req.params.id);
+        if (sale) {
+            sale.isDeleted = !sale.isDeleted; // Toggle
+            await sale.save();
+            res.json({ message: sale.isDeleted ? 'Moved to Bin' : 'Restored', isDeleted: sale.isDeleted });
+        } else {
+            res.status(404).json({ message: 'Sale not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Permanently Delete Sale
+// @route   DELETE /api/sales/:id
+export const deleteSale = async (req, res) => {
+    try {
+        const sale = await Sale.findById(req.params.id);
+        if (sale) {
+            await sale.deleteOne();
+            res.json({ message: 'Sale permanently deleted' });
+        } else {
+            res.status(404).json({ message: 'Sale not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

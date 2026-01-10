@@ -10,7 +10,8 @@ const saleSchema = new mongoose.Schema({
     totalAmount: { type: Number, required: true },
     customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' },
     paymentMethod: { type: String, default: 'Cash' },
-    saleDate: { type: Date, default: Date.now }
+    saleDate: { type: Date, default: Date.now },
+    isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });
 
 const Sale = mongoose.model('Sale', saleSchema);

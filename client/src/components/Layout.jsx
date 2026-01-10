@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingCart, Package, Users, Truck, LogOut, UtensilsCrossed, Search, User, ClipboardList, Menu, Bell } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, Users, Truck, LogOut, UtensilsCrossed, Search, User, ClipboardList, Menu, Bell, History } from 'lucide-react';
 
 const SidebarItem = ({ to, icon: Icon, label }) => (
     <NavLink
@@ -50,7 +50,7 @@ const Layout = () => {
     };
 
     return (
-        <div className="flex h-screen bg-gray-50 font-sans">
+        <div className="flex h-[100dvh] bg-gray-50 font-sans overflow-hidden">
             {/* Desktop Sidebar (Left Rail) */}
             <aside className="hidden md:flex w-72 flex-col bg-white border-r border-gray-100 h-full fixed left-0 top-0 z-30">
                 <div className="p-8 pb-10 flex items-center gap-3">
@@ -62,10 +62,15 @@ const Layout = () => {
                     <SidebarItem to="/" icon={LayoutDashboard} label="Dashboard" />
                     <SidebarItem to="/order" icon={ShoppingCart} label="Easy Order" />
                     <SidebarItem to="/cart" icon={Menu} label="Current Order" />
+                    <SidebarItem to="/history" icon={History} label="History" />
                     <div className="my-4 border-t border-gray-100 mx-6"></div>
                     <SidebarItem to="/products" icon={Package} label="Products" />
                     <SidebarItem to="/customers" icon={Users} label="Customers" />
+                    <SidebarItem to="/customers" icon={Users} label="Customers" />
                     <SidebarItem to="/distributors" icon={Truck} label="Distributors" />
+                    <div className="mt-auto">
+                        <SidebarItem to="/settings" icon={ClipboardList} label="Bill Settings" />
+                    </div>
                 </nav>
 
                 <div className="p-6 border-t border-gray-100">
@@ -97,7 +102,7 @@ const Layout = () => {
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-y-auto w-full max-w-5xl mx-auto md:px-8 md:py-8 pb-20 md:pb-0">
+                <main className="flex-1 overflow-y-auto w-full max-w-7xl mx-auto px-4 py-6 md:px-8 md:py-8 pb-24 md:pb-0">
                     <Outlet />
                 </main>
 

@@ -9,6 +9,8 @@ import EasyOrder from './pages/EasyOrder';
 import Customers from './pages/Customers';
 import Distributors from './pages/Distributors';
 import Cart from './pages/Cart';
+import SalesHistory from './pages/SalesHistory';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
           <Route path="products" element={<Products />} />
           <Route path="customers" element={<Customers />} />
           <Route path="distributors" element={<Distributors />} />
+          <Route path="history" element={<SalesHistory />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
     </Router>

@@ -1,4 +1,5 @@
 import Distributor from '../models/Distributor.js';
+import Product from '../models/Product.js'; // Ensure Product model is registered for populate
 
 // @desc    Get all distributors
 // @route   GET /api/distributors

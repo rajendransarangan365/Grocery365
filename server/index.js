@@ -25,11 +25,13 @@ import productRoutes from './routes/productRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
 import distributorRoutes from './routes/distributorRoutes.js';
 import saleRoutes from './routes/saleRoutes.js';
+import settingsRoutes from './routes/settingsRoutes.js';
 
 app.use('/api/products', productRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/distributors', distributorRoutes);
 app.use('/api/sales', saleRoutes);
+app.use('/api/settings', settingsRoutes);
 
 app.get('/', (req, res) => {
     res.send('Grocery Inventory API is running...');

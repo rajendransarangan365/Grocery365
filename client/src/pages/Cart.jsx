@@ -5,6 +5,8 @@ import { Trash2, CheckCircle, Smartphone, Printer, ArrowRight } from 'lucide-rea
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const Cart = () => {
     const { items } = useSelector(state => state.cart);
@@ -22,6 +24,25 @@ const Cart = () => {
     const [customerId, setCustomerId] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('Cash');
     const [customers, setCustomers] = useState([]);
+
+    // Store Settings
+    const [storeSettings, setStoreSettings] = useState({
+        storeName: 'Grocery365',
+        tagline: 'Premium Grocery Store',
+        footerMessage: 'Thank you for shopping with us!'
+    });
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const { data } = await axios.get('/api/settings');
+                if (data) setStoreSettings(prev => ({ ...prev, ...data }));
+            } catch (err) {
+                console.error("Failed to load settings", err);
+            }
+        };
+        fetchSettings();
+    }, []);
 
     // Initialize checklist when items change
     useEffect(() => {
@@ -70,13 +91,13 @@ const Cart = () => {
     };
 
     const handleShareWhatsApp = () => {
-        let text = `*🧾 Bill from Grocery365*\n\n`;
+        let text = `*🧾 Bill from ${storeSettings.storeName}*\n\n`;
         verifiedItems.forEach(item => {
             text += `${item.name} x ${item.qty}${item.unit || ''} : ₹${(item.sellingPrice * item.qty).toFixed(2)}\n`;
         });
         text += `\n*Total: ₹${totalAmount.toFixed(2)}*`;
         text += `\nPayment: ${paymentMethod}`;
-        text += `\n\n_Thank you for shopping with us!_`;
+        text += `\n\n_${storeSettings.footerMessage}_`;
 
         let url = `https://wa.me/?text=${encodeURIComponent(text)}`;
         if (customerId) {
@@ -86,6 +107,98 @@ const Cart = () => {
             }
         }
         window.open(url, '_blank');
+    };
+
+    const generateBill = (saleData) => {
+        const doc = new jsPDF();
+
+        // Header
+        doc.setFontSize(22);
+        doc.text(storeSettings.storeName, 105, 20, { align: "center" });
+        doc.setFontSize(10);
+        doc.text(storeSettings.tagline, 105, 26, { align: "center" });
+
+        // Address Line (if exists)
+        if (storeSettings.address) {
+            doc.setFontSize(9);
+            doc.text(storeSettings.address, 105, 31, { align: "center" });
+        }
+
+        // Contact Line
+        let contactText = '';
+        if (storeSettings.phone) contactText += `Phone: ${storeSettings.phone} `;
+        if (storeSettings.email) contactText += `| Email: ${storeSettings.email}`;
+        if (contactText) {
+            doc.setFontSize(9);
+            // Adjust Y based on address presence
+            const contactY = storeSettings.address ? 36 : 31;
+            doc.text(contactText, 105, contactY, { align: "center" });
+        }
+
+
+        doc.line(10, 42, 200, 42);
+
+        // Info
+        doc.setFontSize(10);
+        doc.text(`Date: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 14, 50);
+
+        if (customerId) {
+            const cust = customers.find(c => c._id === customerId);
+            if (cust) {
+                doc.text(`Customer: ${cust.name}`, 14, 56);
+                doc.text(`Phone: ${cust.phone}`, 14, 62);
+            }
+        } else {
+            doc.text(`Customer: Guest`, 14, 56);
+        }
+
+        if (storeSettings.gstin) {
+            doc.text(`GSTIN: ${storeSettings.gstin}`, 150, 50);
+        }
+
+        // Table
+        const tableColumn = ["Item", "Qty", "Price", "Total"];
+        const tableRows = [];
+
+        saleData.products.forEach(item => {
+            const productData = verifiedItems.find(p => p._id === item.product); // Get name from UI state
+            const unit = productData ? productData.unit : '';
+            const name = productData ? productData.name : 'Unknown';
+            const price = productData ? productData.sellingPrice : 0;
+
+            tableRows.push([
+                name,
+                `${item.qty} ${unit}`,
+                `Rs. ${price}`,
+                `Rs. ${(price * item.qty).toFixed(2)}`
+            ]);
+        });
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 70, // Push down to avoid overlap
+            theme: 'grid',
+            styles: { fontSize: 10 },
+            headStyles: { fillColor: [0, 0, 0] }
+        });
+
+        // Totals
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Total Amount: Rs. ${saleData.totalAmount.toFixed(2)}`, 140, finalY, { align: "right" });
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Payment Mode: ${paymentMethod}`, 140, finalY + 6, { align: "right" });
+
+        // Footer Message
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "italic");
+        doc.text(storeSettings.footerMessage, 105, finalY + 20, { align: "center" });
+
+        // Save
+        doc.save(`Invoice_${Date.now()}.pdf`);
     };
 
     const handleFinalCheckout = async () => {
@@ -101,6 +214,9 @@ const Cart = () => {
             };
 
             await axios.post('/api/sales', saleData);
+
+            // Generate PDF
+            generateBill(saleData);
 
             // Clean up: remove purchased items from global cart
             // If user unchecked some, they remain in cart? 

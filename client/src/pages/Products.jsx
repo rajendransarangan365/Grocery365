@@ -237,7 +237,7 @@ const Products = () => {
                                         <input
                                             type="number"
                                             placeholder="Cost"
-                                            value={opt.costPrice}
+                                            value={opt.costPrice || ''}
                                             onChange={(e) => handleSupplyChange(idx, 'costPrice', e.target.value)}
                                             className="w-20 bg-gray-50 border-none p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none"
                                             required
@@ -245,7 +245,7 @@ const Products = () => {
                                         <input
                                             type="number"
                                             placeholder="Qty"
-                                            value={opt.stock}
+                                            value={opt.stock || ''}
                                             onChange={(e) => handleSupplyChange(idx, 'stock', e.target.value)}
                                             className="w-16 bg-gray-50 border-none p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-black outline-none"
                                             required

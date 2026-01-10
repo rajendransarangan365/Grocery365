@@ -9,6 +9,22 @@ const Dashboard = () => {
     const [chartData, setChartData] = useState([]);
     const [lowStock, setLowStock] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [todaySales, setTodaySales] = useState(0);
+
+    // Fetch Today's Specific Sales
+    useEffect(() => {
+        const fetchToday = async () => {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const res = await axios.get('/api/sales/history', { params: { date: today } });
+                const total = res.data.reduce((sum, sale) => sum + sale.totalAmount, 0);
+                setTodaySales(total);
+            } catch (error) {
+                console.error("Error fetching today's sales", error);
+            }
+        };
+        fetchToday();
+    }, []);
 
 
     useEffect(() => {
@@ -67,64 +83,86 @@ const Dashboard = () => {
             </div>
 
             {/* Premium Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+
+                {/* TODAY'S DATE SLIP CARD (New) */}
+                <div className="relative w-full bg-white rounded-[2rem] shadow-xl overflow-hidden border border-gray-100 font-sans group h-full min-h-[300px]">
+                    {/* Top White Part */}
+                    <div className="p-8 pb-32">
+                        <div className="text-gray-500 font-bold uppercase tracking-wider text-xs mb-1">Live Overview</div>
+                        <h2 className="text-3xl font-black text-gray-900 leading-tight">
+                            {new Date().toLocaleDateString('en-US', { weekday: 'long' })},<br />
+                            <span className="text-gray-400">{new Date().getDate()} {new Date().toLocaleDateString('en-US', { month: 'long' })}</span>
+                        </h2>
+                    </div>
+
+                    {/* Bottom Black Part */}
+                    <div className="absolute bottom-0 inset-x-0 bg-black text-white p-6 pt-8 rounded-[2rem] transform translate-y-2 transition-transform group-hover:translate-y-0">
+                        <div className="flex justify-between items-end">
+                            <div>
+                                <div className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Today's Sales</div>
+                                <div className="font-mono text-4xl font-bold tracking-tighter">
+                                    ₹{todaySales.toFixed(0)}<span className="text-lg text-gray-500">.{todaySales.toFixed(2).split('.')[1]}</span>
+                                </div>
+                            </div>
+                            <div className="bg-gray-800 p-2 rounded-lg">
+                                <DollarSign size={24} className="text-white" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 {/* Sales Card - Dark Gradient */}
-                <div className="relative overflow-hidden bg-black text-white rounded-[2rem] p-8 shadow-2xl group">
+                <div className="relative overflow-hidden bg-zinc-900 text-white rounded-[2rem] p-8 shadow-2xl group min-h-[300px] flex flex-col justify-between">
                     <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 transition-all group-hover:bg-white/10"></div>
                     <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-4 opacity-80">
                             <div className="p-2 bg-white/10 rounded-full backdrop-blur-md">
-                                <DollarSign size={20} />
+                                <Activity size={20} />
                             </div>
-                            <span className="font-bold text-sm tracking-widest uppercase">Total Sales</span>
+                            <span className="font-bold text-sm tracking-widest uppercase">Total Revenue</span>
                         </div>
                         <h2 className="text-4xl font-black tracking-tight mb-2">{formatCurrency(stats.totalSales)}</h2>
                         <div className="flex items-center gap-1 text-green-400 font-bold text-sm bg-green-400/10 w-fit px-2 py-1 rounded-lg">
                             <ArrowUpRight size={16} />
-                            <span>+12.5% this week</span>
+                            <span>{timeRange} performance</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Profit Card - Vibrant Gradient - FIXED "BLEEDING" */}
-                <div className="relative overflow-hidden bg-gradient-to-br from-[#10B981] to-[#047857] text-white rounded-[2rem] p-8 shadow-2xl shadow-green-200 group">
-                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-3xl -ml-16 -mb-16 transition-all group-hover:bg-black/20"></div>
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-4 opacity-90">
-                            <div className="p-2 bg-black/10 rounded-full backdrop-blur-md">
-                                <TrendingUp size={20} />
-                            </div>
-                            <span className="font-bold text-sm tracking-widest uppercase">Net Profit</span>
-                        </div>
-                        {/* THE FIX: using formatCurrency handles rounding automatically */}
-                        <h2 className="text-4xl font-black tracking-tight mb-2">{formatCurrency(stats.totalProfit)}</h2>
-                        <div className="text-green-50 font-bold text-sm opacity-90">
-                            Solid margins! 🚀
-                        </div>
-                    </div>
-                </div>
-
-                {/* Alerts Card */}
-                <div className="relative overflow-hidden bg-white border border-gray-100 rounded-[2rem] p-8 shadow-lg flex flex-col justify-between">
-                    <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-3 text-gray-400">
-                                <div className="p-2 bg-red-50 text-red-500 rounded-full">
-                                    <AlertTriangle size={20} />
+                {/* Profit Card & Alerts (Stacked for layout balance) */}
+                <div className="space-y-6">
+                    {/* Profit Card */}
+                    <div className="relative overflow-hidden bg-gradient-to-br from-[#10B981] to-[#047857] text-white rounded-[2rem] p-8 shadow-xl shadow-green-100 group">
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-3xl -ml-16 -mb-16 transition-all group-hover:bg-black/20"></div>
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-3 mb-4 opacity-90">
+                                <div className="p-2 bg-black/10 rounded-full backdrop-blur-md">
+                                    <TrendingUp size={20} />
                                 </div>
-                                <span className="font-bold text-sm tracking-widest uppercase text-gray-500">Alerts</span>
+                                <span className="font-bold text-sm tracking-widest uppercase">Net Profit</span>
                             </div>
-                            {lowStock.length > 0 && <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">{lowStock.length} Low</span>}
+                            <h2 className="text-3xl font-black tracking-tight mb-1">{formatCurrency(stats.totalProfit)}</h2>
+                            <div className="text-green-50 font-bold text-xs opacity-90">
+                                Solid margins! 🚀
+                            </div>
                         </div>
-                        <h2 className="text-4xl font-black text-gray-900 mb-1">{lowStock.length}</h2>
-                        <p className="text-gray-400 text-sm font-medium">Products need attention</p>
                     </div>
-                    {lowStock.length === 0 && (
-                        <div className="text-sm font-bold text-green-500 flex items-center gap-1 mt-4">
-                            <Package size={16} /> All stocked up!
+
+                    {/* Alerts Card */}
+                    <div className="relative overflow-hidden bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2 text-gray-400">
+                                    <AlertTriangle size={18} />
+                                    <span className="font-bold text-xs tracking-widest uppercase">Alerts</span>
+                                </div>
+                                {lowStock.length > 0 && <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">{lowStock.length}</span>}
+                            </div>
+                            <h2 className="text-3xl font-black text-gray-900">{lowStock.length}</h2>
+                            <p className="text-gray-400 text-xs font-medium">Low stock items</p>
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
 
@@ -161,7 +199,7 @@ const Dashboard = () => {
                 {/* Recharts Area Chart */}
                 <div className="h-64 w-full -ml-4">
                     {chartData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minHeight={200}>
                             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
