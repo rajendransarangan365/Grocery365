@@ -8,7 +8,7 @@ const Distributors = () => {
     const [formData, setFormData] = useState({ name: '', phone: '', address: '' });
 
     const fetchDistributors = async () => {
-        const res = await axios.get('http://localhost:5000/api/distributors');
+        const res = await axios.get('/api/distributors');
         setDistributors(res.data);
     };
 
@@ -18,7 +18,7 @@ const Distributors = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        await axios.post('http://localhost:5000/api/distributors', formData);
+        await axios.post('/api/distributors', formData);
         setIsModalOpen(false);
         setFormData({ name: '', phone: '', address: '' });
         fetchDistributors();

@@ -40,6 +40,12 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/grocery_inv
     .then(() => console.log('MongoDB Connected'))
     .catch(err => console.log(err));
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// Export for Vercel
+export default app;
+
+// Only listen if run directly (dev mode)
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}

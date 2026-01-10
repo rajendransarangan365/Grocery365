@@ -56,6 +56,17 @@ const EasyOrder = () => {
         setExpandedId(null); // Close after adding
     };
 
+
+    // Helper to determine if decimal quantity is allowed
+    const isDecimalUnit = (product) => {
+        if (!product) return false;
+        const decimalUnits = ['kg', 'l', 'ml', 'g', 'ltr'];
+        const pUnit = product.unit?.toLowerCase();
+        if (decimalUnits.includes(pUnit)) return true;
+        // Check name for unit patterns like "1kg" if unit is vague
+        return /\d+\s*(kg|l|ml|g|ltr)/i.test(product.name);
+    };
+
     return (
         <div className="h-full flex flex-col font-sans w-full bg-gray-50 relative">
             {/* Header Area */}
@@ -99,9 +110,8 @@ const EasyOrder = () => {
                 <div className="flex flex-col gap-3">
                     {filteredProducts.map(product => {
                         const isExpanded = expandedId === product._id;
-                        // Determine validation rules on the fly for rendering
-                        const isDecimal = ['kg', 'l', 'ml', 'g', 'ltr'].includes(product.unit?.toLowerCase()) || /\d+\s*(kg|l|ml|g|ltr)/i.test(product.name);
-                        const step = isDecimal ? "0.01" : "1";
+                        const allowDecimals = isDecimalUnit(product);
+                        const step = allowDecimals ? "0.01" : "1";
                         // If expanded, use the controlled input state, else use 0 (or just don't render)
                         const currentInput = isExpanded ? qtyInput : '';
 
@@ -115,7 +125,7 @@ const EasyOrder = () => {
                                     {/* Thumbnail */}
                                     <div className="w-16 h-16 bg-gray-50 rounded-xl flex-shrink-0 overflow-hidden relative">
                                         <img
-                                            src={product.image && (product.image.startsWith('http') ? product.image : `http://localhost:5000/${product.image.replace(/\\/g, '/')}`)}
+                                            src={product.image && (product.image.startsWith('http') ? product.image : `/${product.image.replace(/\\/g, '/')}`)}
                                             alt={product.name}
                                             className="w-full h-full object-cover"
                                             onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=IMG' }}
@@ -166,10 +176,10 @@ const EasyOrder = () => {
                                                         type="number"
                                                         min="0"
                                                         max={product.qty}
-                                                        step={isDecimal ? "any" : "1"}
+                                                        step={allowDecimals ? "any" : "1"}
                                                         value={currentInput}
                                                         onKeyDown={(e) => {
-                                                            if (!isDecimal && e.key === '.') {
+                                                            if (!allowDecimals && e.key === '.') {
                                                                 e.preventDefault();
                                                             }
                                                         }}

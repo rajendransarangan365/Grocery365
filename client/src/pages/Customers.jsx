@@ -8,7 +8,7 @@ const Customers = () => {
     const [formData, setFormData] = useState({ name: '', phone: '', address: '' });
 
     const fetchCustomers = async () => {
-        const res = await axios.get('http://localhost:5000/api/customers');
+        const res = await axios.get('/api/customers');
         setCustomers(res.data);
     };
 
@@ -18,7 +18,7 @@ const Customers = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        await axios.post('http://localhost:5000/api/customers', formData);
+        await axios.post('/api/customers', formData);
         setIsModalOpen(false);
         setFormData({ name: '', phone: '', address: '' });
         fetchCustomers();
@@ -26,7 +26,7 @@ const Customers = () => {
 
     const handleDelete = async (id) => {
         if (confirm('Are you sure?')) {
-            await axios.delete(`http://localhost:5000/api/customers/${id}`);
+            await axios.delete(`/api/customers/${id}`);
             fetchCustomers();
         }
     }

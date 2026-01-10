@@ -14,7 +14,7 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const salesRes = await axios.get(`http://localhost:5000/api/sales/analytics?range=${timeRange}`);
+                const salesRes = await axios.get(`/api/sales/analytics?range=${timeRange}`);
                 // Process Stats for Card
                 setStats({
                     totalSales: salesRes.data.totalSalesAmount || 0,
@@ -38,7 +38,7 @@ const Dashboard = () => {
                     setWeeklyData(normalized);
                 }
 
-                const productsRes = await axios.get('http://localhost:5000/api/products');
+                const productsRes = await axios.get('/api/products');
                 const low = productsRes.data.filter(p => p.qty < 5);
                 setLowStock(low);
             } catch (error) {
@@ -160,68 +160,74 @@ const Dashboard = () => {
 
                 {/* Recharts Area Chart */}
                 <div className="h-64 w-full -ml-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#000000" stopOpacity={0.1} />
-                                    <stop offset="95%" stopColor="#000000" stopOpacity={0} />
-                                </linearGradient>
-                                <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.2} />
-                                    <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <XAxis
-                                dataKey="label"
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fontSize: 10, fill: '#9CA3AF', fontWeight: 'bold' }}
-                                dy={10}
-                            />
-                            <Tooltip
-                                content={({ active, payload, label }) => {
-                                    if (active && payload && payload.length) {
-                                        const sales = payload[0].value;
-                                        const profit = payload[1].value;
-                                        return (
-                                            <div className="bg-white p-4 rounded-2xl shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
-                                                <p className="text-xs font-bold text-gray-400 uppercase mb-2">{label}</p>
-                                                <div className="space-y-1">
-                                                    <p className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                                                        <span className="w-2 h-2 rounded-full bg-black"></span>
-                                                        Sales: {formatCurrency(sales)}
-                                                    </p>
-                                                    <p className="text-sm font-bold text-emerald-600 flex items-center gap-2">
-                                                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                                        Profit: {formatCurrency(profit)}
-                                                    </p>
+                    {chartData.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#000000" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#000000" stopOpacity={0} />
+                                    </linearGradient>
+                                    <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.2} />
+                                        <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <XAxis
+                                    dataKey="label"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 10, fill: '#9CA3AF', fontWeight: 'bold' }}
+                                    dy={10}
+                                />
+                                <Tooltip
+                                    content={({ active, payload, label }) => {
+                                        if (active && payload && payload.length) {
+                                            const sales = payload[0].value;
+                                            const profit = payload[1].value;
+                                            return (
+                                                <div className="bg-white p-4 rounded-2xl shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+                                                    <p className="text-xs font-bold text-gray-400 uppercase mb-2">{label}</p>
+                                                    <div className="space-y-1">
+                                                        <p className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                                                            <span className="w-2 h-2 rounded-full bg-black"></span>
+                                                            Sales: {formatCurrency(sales)}
+                                                        </p>
+                                                        <p className="text-sm font-bold text-emerald-600 flex items-center gap-2">
+                                                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                                            Profit: {formatCurrency(profit)}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                }}
-                            />
-                            <Area
-                                type="monotone"
-                                dataKey="sales"
-                                stroke="#000"
-                                strokeWidth={3}
-                                fillOpacity={1}
-                                fill="url(#colorSales)"
-                            />
-                            <Area
-                                type="monotone"
-                                dataKey="profit"
-                                stroke="#10B981"
-                                strokeWidth={3}
-                                strokeDasharray="5 5"
-                                fillOpacity={1}
-                                fill="url(#colorProfit)"
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
+                                            );
+                                        }
+                                        return null;
+                                    }}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="sales"
+                                    stroke="#000"
+                                    strokeWidth={3}
+                                    fillOpacity={1}
+                                    fill="url(#colorSales)"
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="profit"
+                                    stroke="#10B981"
+                                    strokeWidth={3}
+                                    strokeDasharray="5 5"
+                                    fillOpacity={1}
+                                    fill="url(#colorProfit)"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <div className="flex h-full items-center justify-center text-gray-400 text-sm font-medium">
+                            No data available for this period
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -235,7 +241,7 @@ const Dashboard = () => {
                                 <div className="flex items-center gap-4">
                                     <div className="w-14 h-14 rounded-xl bg-gray-50 p-1">
                                         <img
-                                            src={p.image && (p.image.startsWith('http') ? p.image : `http://localhost:5000/${p.image.replace(/\\/g, '/')}`)}
+                                            src={p.image && (p.image.startsWith('http') ? p.image : `/${p.image.replace(/\\/g, '/')}`)}
                                             alt={p.name}
                                             className="w-full h-full object-cover rounded-lg"
                                             onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=IMG' }}

@@ -40,7 +40,7 @@ const Cart = () => {
     useEffect(() => {
         const fetchCustomers = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/customers');
+                const res = await axios.get('/api/customers');
                 setCustomers(res.data);
             } catch (err) {
                 console.error("Failed to load customers", err);
@@ -95,12 +95,12 @@ const Cart = () => {
                     product: item._id,
                     qty: item.qty
                 })),
-                totalAmount,
+                totalAmount: Number(totalAmount.toFixed(2)),
                 customerId: customerId || null,
                 paymentMethod
             };
 
-            await axios.post('http://localhost:5000/api/sales', saleData);
+            await axios.post('/api/sales', saleData);
 
             // Clean up: remove purchased items from global cart
             // If user unchecked some, they remain in cart? 
@@ -160,7 +160,7 @@ const Cart = () => {
                         {/* Image */}
                         <div className="w-14 h-14 rounded-xl bg-white flex-shrink-0 p-1 mr-4 overflow-hidden border border-gray-100">
                             <img
-                                src={`http://localhost:5000/${item.image && item.image.replace(/\\/g, '/')}`}
+                                src={`/${item.image && item.image.replace(/\\/g, '/')}`}
                                 alt={item.name}
                                 className="w-full h-full object-cover rounded-lg"
                                 onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Food' }}

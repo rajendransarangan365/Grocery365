@@ -28,7 +28,7 @@ const Products = () => {
         }
         const fetchDist = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/distributors');
+                const res = await axios.get('/api/distributors');
                 setDistributors(res.data);
             } catch (err) {
                 console.error("Failed to load distributors", err);
@@ -150,7 +150,7 @@ const Products = () => {
                     <div key={product._id} className="p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors group">
                         <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-gray-100">
                             <img
-                                src={product.image && (product.image.startsWith('http') ? product.image : `http://localhost:5000/${product.image.replace(/\\/g, '/')}`)}
+                                src={product.image && (product.image.startsWith('http') ? product.image : `/${product.image.replace(/\\/g, '/')}`)}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                                 onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=IMG' }}
