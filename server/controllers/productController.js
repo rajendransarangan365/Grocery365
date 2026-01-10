@@ -15,7 +15,9 @@ export const getProducts = async (req, res) => {
 // @route   POST /api/products
 export const createProduct = async (req, res) => {
     try {
-        const { name, qty, sellingPrice, category, unit, supplyOptions } = req.body;
+        const { name, qty, sellingPrice, category, supplyOptions, unit } = req.body;
+
+        // Cloudinary returns the secure_url in req.file.path
         const image = req.file ? req.file.path : null;
 
         if (!image) {
