@@ -14,9 +14,9 @@ const EasyOrder = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
 
-    const [qtyModalOpen, setQtyModalOpen] = useState(false);
+    const [expandedId, setExpandedId] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
-    const [qtyInput, setQtyInput] = useState('');
+    const [qtyInput, setQtyInput] = useState('1');
 
     useEffect(() => {
         dispatch(fetchProducts());
@@ -30,11 +30,15 @@ const EasyOrder = () => {
         return matchesSearch && matchesCategory;
     });
 
-    const initiateAddToCart = (product) => {
-        // ALWAYS ask for quantity with the new slider UI as requested
-        setSelectedProduct(product);
-        setQtyInput(1); // Default to 1
-        setQtyModalOpen(true);
+    const toggleExpand = (product) => {
+        if (expandedId === product._id) {
+            setExpandedId(null);
+            setSelectedProduct(null);
+        } else {
+            setExpandedId(product._id);
+            setSelectedProduct(product);
+            setQtyInput('1'); // Reset to default strict
+        }
     };
 
     const handleAddToCart = (product, qty) => {
@@ -49,7 +53,7 @@ const EasyOrder = () => {
 
         dispatch(addToCart({ ...product, qty: quantity }));
         toast.success(`Added ${quantity} ${product.unit || ''} of ${product.name} to order! 🛒`);
-        setQtyModalOpen(false);
+        setExpandedId(null); // Close after adding
     };
 
     return (
@@ -90,45 +94,111 @@ const EasyOrder = () => {
                 </div>
             </div>
 
-            {/* Product Feed */}
+            {/* Product List Feed */}
             <div className="flex-1 overflow-y-auto px-4 py-4">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {filteredProducts.map(product => (
-                        <div key={product._id} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 flex flex-col hover:shadow-md transition-shadow">
-                            {/* Image Aspect Ratio Square */}
-                            <div className="aspect-square bg-gray-50 relative overflow-hidden group">
-                                <img
-                                    src={product.image && (product.image.startsWith('http') ? product.image : `http://localhost:5000/${product.image.replace(/\\/g, '/')}`)}
-                                    alt={product.name}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                    onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=IMG' }}
-                                />
-                                <button
-                                    onClick={() => initiateAddToCart(product)}
-                                    className="absolute bottom-2 right-2 w-8 h-8 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-lg active:scale-95 text-black hover:bg-black hover:text-white transition-colors border border-gray-100"
-                                >
-                                    <Plus size={16} />
-                                </button>
-                                {/* Stock Badge Overlay */}
-                                <div className="absolute top-2 left-2 bg-black/50 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                    {product.qty} {product.unit} left
-                                </div>
-                            </div>
+                <div className="flex flex-col gap-3">
+                    {filteredProducts.map(product => {
+                        const isExpanded = expandedId === product._id;
+                        // Determine validation rules on the fly for rendering
+                        const isDecimal = ['kg', 'l', 'ml', 'g', 'ltr'].includes(product.unit?.toLowerCase()) || /\d+\s*(kg|l|ml|g|ltr)/i.test(product.name);
+                        const step = isDecimal ? "0.01" : "1";
+                        // If expanded, use the controlled input state, else use 0 (or just don't render)
+                        const currentInput = isExpanded ? qtyInput : '';
 
-                            {/* Meta */}
-                            <div className="p-3">
-                                <div className="flex justify-between items-start mb-1 h-10">
-                                    <h3 className="font-semibold text-gray-900 text-sm leading-tight pr-2 line-clamp-2">{product.name}</h3>
+                        return (
+                            <div key={product._id} className={`bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 transition-all duration-300 ${isExpanded ? 'ring-2 ring-black shadow-lg' : ''}`}>
+                                {/* Main Row: Click to Expand */}
+                                <div
+                                    onClick={() => toggleExpand(product)}
+                                    className="flex items-center p-3 gap-4 cursor-pointer active:bg-gray-50 bg-white relative z-10"
+                                >
+                                    {/* Thumbnail */}
+                                    <div className="w-16 h-16 bg-gray-50 rounded-xl flex-shrink-0 overflow-hidden relative">
+                                        <img
+                                            src={product.image && (product.image.startsWith('http') ? product.image : `http://localhost:5000/${product.image.replace(/\\/g, '/')}`)}
+                                            alt={product.name}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=IMG' }}
+                                        />
+                                        {/* Stock Badge - Mini */}
+                                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[8px] font-bold text-center py-0.5 backdrop-blur-sm">
+                                            {product.qty} {product.unit}
+                                        </div>
+                                    </div>
+
+                                    {/* Info */}
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-bold text-gray-900 leading-tight mb-1 truncate">{product.name}</h3>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-sm">₹{product.sellingPrice}</span>
+                                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wide bg-gray-100 px-1.5 rounded">{product.unit || 'PCS'}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Icon */}
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isExpanded ? 'bg-black text-white' : 'bg-gray-100 text-black'}`}>
+                                        {isExpanded ? <span className="text-xl font-bold leading-none mb-1">-</span> : <Plus size={16} />}
+                                    </div>
                                 </div>
-                                <div className="flex justify-between items-center mt-auto">
-                                    <p className="text-gray-400 text-[10px] uppercase font-bold tracking-wide">
-                                        {product.unit || 'PCS'}
-                                    </p>
-                                    <span className="font-bold text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-900">₹{product.sellingPrice}</span>
-                                </div>
+
+                                {/* Expanded Area: Quantity Controls */}
+                                {isExpanded && (
+                                    <div className="p-4 bg-gray-50 border-t border-gray-100 animate-in slide-in-from-top-2 duration-200">
+                                        <div className="mb-4">
+                                            <div className="flex justify-between text-xs font-bold text-gray-400 mb-2 uppercase">
+                                                <span>Select Quantity</span>
+                                                <span className={Number(qtyInput) > product.qty ? "text-red-500" : ""}>Max: {product.qty}</span>
+                                            </div>
+
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max={product.qty}
+                                                step={step}
+                                                value={currentInput}
+                                                onChange={(e) => setQtyInput(e.target.value)}
+                                                className="w-full h-4 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black hover:accent-gray-800 transition-all mb-4"
+                                            />
+
+                                            <div className="flex items-center gap-3">
+                                                <div className="relative flex-1">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        max={product.qty}
+                                                        step={isDecimal ? "any" : "1"}
+                                                        value={currentInput}
+                                                        onKeyDown={(e) => {
+                                                            if (!isDecimal && e.key === '.') {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
+                                                        onChange={(e) => setQtyInput(e.target.value)}
+                                                        className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-center text-xl font-black focus:ring-2 focus:ring-black outline-none"
+                                                        autoFocus
+                                                    />
+                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">{product.unit}</span>
+                                                </div>
+
+                                                <button
+                                                    onClick={() => handleAddToCart(product, qtyInput)}
+                                                    disabled={!qtyInput || Number(qtyInput) <= 0 || Number(qtyInput) > product.qty}
+                                                    className="flex-[2] py-3 bg-black text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 active:scale-95 transition-all text-sm disabled:opacity-50 disabled:scale-100 disabled:shadow-none flex items-center justify-center gap-2"
+                                                >
+                                                    Add to Order 🛒
+                                                </button>
+                                            </div>
+                                            {Number(qtyInput) > product.qty && (
+                                                <p className="text-center text-red-500 text-xs font-bold mt-2">
+                                                    ⚠️ Limited Stock!
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
                 {filteredProducts.length === 0 && (
                     <div className="text-center py-20 text-gray-400">
@@ -136,83 +206,6 @@ const EasyOrder = () => {
                     </div>
                 )}
             </div>
-
-            {/* Quantity Modal with Slider */}
-            {qtyModalOpen && selectedProduct && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-sm rounded-[2rem] p-8 shadow-2xl animate-in slide-in-from-bottom-5 duration-300">
-
-                        <div className="text-center mb-6">
-                            <h3 className="text-xl font-black mb-1">Add to Cart</h3>
-                            <p className="text-gray-500 text-sm font-medium">How much <span className="text-black font-bold">{selectedProduct.name}</span>?</p>
-                        </div>
-
-                        {/* Slider Control */}
-                        <div className="mb-8">
-                            <div className="flex justify-between text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">
-                                <span>0</span>
-                                <span>Max: {selectedProduct.qty} {selectedProduct.unit}</span>
-                            </div>
-
-                            <input
-                                type="range"
-                                min="0"
-                                max={selectedProduct.qty}
-                                step={(['kg', 'l', 'ml', 'g', 'ltr'].includes(selectedProduct.unit?.toLowerCase()) || /\d+\s*(kg|l|ml|g|ltr)/i.test(selectedProduct.name)) ? "0.01" : "1"}
-                                value={qtyInput}
-                                onChange={(e) => setQtyInput(e.target.value)}
-                                className="w-full h-4 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black hover:accent-gray-800 transition-all"
-                            />
-
-                            {/* Manual Input Sync */}
-                            <div className="mt-6 flex items-center justify-center gap-2">
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        max={selectedProduct.qty}
-                                        step={(['kg', 'l', 'ml', 'g', 'ltr'].includes(selectedProduct.unit?.toLowerCase()) || /\d+\s*(kg|l|ml|g|ltr)/i.test(selectedProduct.name)) ? "any" : "1"}
-                                        value={qtyInput}
-                                        onKeyDown={(e) => {
-                                            const isDecimal = ['kg', 'l', 'ml', 'g', 'ltr'].includes(selectedProduct.unit?.toLowerCase()) || /\d+\s*(kg|l|ml|g|ltr)/i.test(selectedProduct.name);
-                                            // Prevent decimal point for non-decimal units
-                                            if (!isDecimal && e.key === '.') {
-                                                e.preventDefault();
-                                            }
-                                        }}
-                                        onChange={(e) => {
-                                            const val = Number(e.target.value);
-                                            // Let's allow typing but clamp if needed on submit
-                                            setQtyInput(e.target.value);
-                                        }}
-                                        className="w-32 bg-gray-100 border-none rounded-2xl py-3 text-center text-3xl font-black focus:ring-2 focus:ring-black outline-none"
-                                    />
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">{selectedProduct.unit}</span>
-                                </div>
-                            </div>
-
-                            {Number(qtyInput) > selectedProduct.qty && (
-                                <p className="text-center text-red-500 text-xs font-bold mt-2 animate-bounce">
-                                    ⚠️ Max available is {selectedProduct.qty} {selectedProduct.unit}
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="flex gap-3">
-                            <button onClick={() => setQtyModalOpen(false)} className="flex-1 py-4 text-gray-500 font-bold hover:bg-gray-50 rounded-xl transition-colors">
-                                Cancel
-                            </button>
-                            <button
-                                onClick={() => handleAddToCart(selectedProduct, qtyInput)}
-                                disabled={!qtyInput || Number(qtyInput) <= 0 || Number(qtyInput) > selectedProduct.qty}
-                                className="flex-1 py-4 bg-black text-white font-bold rounded-xl shadow-xl hover:bg-gray-800 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:shadow-none"
-                            >
-                                Add +
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
