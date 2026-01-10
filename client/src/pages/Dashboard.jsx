@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, AlertTriangle, Package, Bell, ArrowUpRight, DollarSign, Activity } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Package, Bell, ArrowUpRight, DollarSign, Activity, Phone } from 'lucide-react';
 import axios from 'axios';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -64,7 +64,15 @@ const Dashboard = () => {
         fetchData();
     }, [timeRange]);
 
-    // Helper for currency formatting
+    const actionRequiredRef = React.useRef(null);
+
+    const scrollToRef = (ref) => {
+        if (ref.current) {
+            ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+
+    // ... (keep existing helper)
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-IN', {
             style: 'currency',
@@ -150,7 +158,10 @@ const Dashboard = () => {
                     </div>
 
                     {/* Alerts Card */}
-                    <div className="relative overflow-hidden bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm flex flex-col justify-between">
+                    <div
+                        onClick={() => scrollToRef(actionRequiredRef)}
+                        className="relative overflow-hidden bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm flex flex-col justify-between cursor-pointer hover:shadow-md transition-all active:scale-95"
+                    >
                         <div>
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2 text-gray-400">
@@ -166,7 +177,46 @@ const Dashboard = () => {
                 </div>
             </div>
 
-
+            {/* Recent Alerts Feed - Moved Above Chart */}
+            <div ref={actionRequiredRef}>
+                {lowStock.length > 0 && (
+                    <div className="animate-in slide-in-from-bottom-4 duration-500">
+                        <h3 className="text-lg font-bold text-gray-900 mb-4 px-2 flex items-center gap-2">
+                            <AlertTriangle size={20} className="text-red-500" /> Action Required
+                        </h3>
+                        <div className="grid gap-3">
+                            {lowStock.map(p => (
+                                <div key={p._id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-14 h-14 rounded-xl bg-gray-50 p-1">
+                                            <img
+                                                src={p.image && (p.image.startsWith('http') ? p.image : `/${p.image.replace(/\\/g, '/')}`)}
+                                                alt={p.name}
+                                                className="w-full h-full object-cover rounded-lg"
+                                                onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=IMG' }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-gray-900">{p.name}</h4>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className="bg-red-50 text-red-500 text-xs font-bold px-2 py-0.5 rounded-md">
+                                                    Only {p.qty} {p.unit} left
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setSelectedProduct(p)}
+                                        className="bg-black text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-gray-200 hover:bg-gray-800 active:scale-95 transition-all"
+                                    >
+                                        Refill
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
 
             {/* Chart Section */}
             <div className="bg-white border border-gray-100 rounded-[2.5rem] p-8 md:p-10 shadow-sm relative overflow-hidden">
@@ -269,43 +319,6 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Recent Alerts Feed */}
-            {lowStock.length > 0 && (
-                <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-4 px-2">Action Required</h3>
-                    <div className="grid gap-3">
-                        {lowStock.map(p => (
-                            <div key={p._id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-xl bg-gray-50 p-1">
-                                        <img
-                                            src={p.image && (p.image.startsWith('http') ? p.image : `/${p.image.replace(/\\/g, '/')}`)}
-                                            alt={p.name}
-                                            className="w-full h-full object-cover rounded-lg"
-                                            onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=IMG' }}
-                                        />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-gray-900">{p.name}</h4>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <span className="bg-red-50 text-red-500 text-xs font-bold px-2 py-0.5 rounded-md">
-                                                Only {p.qty} {p.unit} left
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => setSelectedProduct(p)}
-                                    className="bg-black text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-gray-200 hover:bg-gray-800 active:scale-95 transition-all"
-                                >
-                                    Refill
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
             {/* Restock Modal (Kept same functionality, just styled) */}
             {selectedProduct && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-in fade-in duration-200">
@@ -321,18 +334,38 @@ const Dashboard = () => {
                         <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
                             {selectedProduct.supplyOptions && selectedProduct.supplyOptions.length > 0 ? (
                                 selectedProduct.supplyOptions.map((opt, idx) => (
-                                    <div key={idx} className="bg-gray-50 p-4 rounded-xl flex items-center justify-between group hover:bg-black hover:text-white transition-all duration-300 cursor-pointer border border-gray-100 hover:border-black">
+                                    <div key={idx} className="bg-gray-50 p-4 rounded-xl flex items-center justify-between group hover:bg-black hover:text-white transition-all duration-300 border border-gray-100 hover:border-black">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center font-bold text-lg shrink-0 shadow-sm">
                                                 {opt.distributor?.name?.charAt(0) || 'D'}
                                             </div>
                                             <div>
                                                 <p className="font-bold text-sm">{opt.distributor?.name || 'Unknown'}</p>
-                                                <p className="text-xs opacity-60 font-medium">Stock: {opt.stock || 0}</p>
+                                                <div className="flex items-center gap-2 text-xs opacity-60 font-medium">
+                                                    <span>Stock: {opt.stock || 0}</span>
+                                                    {opt.distributor?.phone && (
+                                                        <>
+                                                            <span>•</span>
+                                                            <div className="flex items-center gap-1">
+                                                                <span>{opt.distributor.phone}</span>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="text-right">
+                                        <div className="flex items-center gap-4">
                                             <p className="font-black text-lg">₹{opt.costPrice}</p>
+                                            {opt.distributor?.phone && (
+                                                <a
+                                                    href={`tel:${opt.distributor.phone}`}
+                                                    onClick={(e) => e.stopPropagation()} // Prevent card click
+                                                    className="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center hover:bg-green-600 shadow-md transition-transform active:scale-95"
+                                                    title="Call Dealer"
+                                                >
+                                                    <Phone size={18} fill="currentColor" />
+                                                </a>
+                                            )}
                                         </div>
                                     </div>
                                 ))

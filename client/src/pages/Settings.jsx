@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Save, Building, Phone, Mail, Globe, FileText, Type } from 'lucide-react';
+import { Save, Building, Phone, Mail, Globe, FileText, Type, Smartphone } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Settings = () => {
@@ -122,10 +122,15 @@ const Settings = () => {
                     </button>
                 </form>
 
+
                 {/* Preview Section */}
                 <div className="space-y-4 sticky top-8">
+
+                    {/* Tabs or Toggles could go here, for now stacking them */}
+
+                    {/* Bill Preview */}
                     <h3 className="font-bold text-gray-500 text-xs uppercase tracking-wider">Live Bill Preview</h3>
-                    <div className="bg-white p-8 rounded-none shadow-xl border border-gray-200 min-h-[500px] flex flex-col font-mono text-gray-800 text-xs leading-relaxed relative">
+                    <div className="bg-white p-8 rounded-none shadow-xl border border-gray-200 min-h-[400px] flex flex-col font-mono text-gray-800 text-xs leading-relaxed relative scale-95 origin-top-left w-full">
                         {/* Paper Texture Effect */}
                         <div className="absolute inset-0 bg-neutral-50 mix-blend-multiply opacity-50 pointer-events-none"></div>
 
@@ -177,9 +182,51 @@ const Settings = () => {
                             {settings.website && <p className="text-gray-500">{settings.website}</p>}
                         </div>
                     </div>
+
+                    {/* WhatsApp Preview */}
+                    <div className="mt-8">
+                        <h3 className="font-bold text-gray-500 text-xs uppercase tracking-wider mb-2">WhatsApp Message Preview</h3>
+                        <div className="bg-[#E5DDD5] p-4 rounded-xl shadow-inner min-h-[200px] border border-gray-200">
+                            <div className="bg-white p-3 rounded-lg shadow-sm rounded-tl-none max-w-[85%] relative">
+                                {/* Triangle */}
+                                <div className="absolute top-0 -left-2 w-0 h-0 border-t-[10px] border-t-white border-l-[10px] border-l-transparent"></div>
+
+                                <div className="text-sm text-gray-900 whitespace-pre-wrap leading-relaxed font-sans">
+                                    <p className="font-bold mb-2">
+                                        {settings.whatsappHeader ? settings.whatsappHeader.replace('{storeName}', settings.storeName || 'Store') : `🧾 Bill from ${settings.storeName}`}
+                                    </p>
+                                    <div className="space-y-1 mb-2 text-gray-800">
+                                        <div className="flex justify-between"><span>Milk Bikis x 2</span><span>₹20.00</span></div>
+                                        <div className="flex justify-between"><span>Good Day x 1</span><span>₹20.00</span></div>
+                                    </div>
+                                    <div className="border-t border-gray-200 my-2 pt-1 font-bold flex justify-between">
+                                        <span>Total</span>
+                                        <span>₹40.00</span>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-2">Payment: Cash</p>
+                                    <p className="mt-3 italic text-gray-600 text-xs text-center border-t border-gray-100 pt-2">{settings.whatsappFooter || 'Thank you!'}</p>
+                                </div>
+                                <div className="text-[10px] text-gray-400 text-right mt-1">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                            </div>
+                        </div>
+
+                        {/* WhatsApp Settings Inputs */}
+                        <div className="bg-white p-4 rounded-xl border border-gray-100 mt-4 space-y-3">
+                            <h4 className="font-bold text-sm flex items-center gap-2"><Smartphone size={16} /> WhatsApp Config</h4>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Header Template</label>
+                                <input name="whatsappHeader" value={settings.whatsappHeader || ''} onChange={handleChange} placeholder="e.g. 🛒 Bill from {storeName}" className="w-full bg-gray-50 border-none p-2 rounded text-sm disabled:opacity-50" />
+                                <p className="text-[10px] text-gray-400 mt-1">Use <code>{'{storeName}'}</code> to insert your store name.</p>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Footer Message</label>
+                                <input name="whatsappFooter" value={settings.whatsappFooter || ''} onChange={handleChange} placeholder="e.g. Thanks for visiting!" className="w-full bg-gray-50 border-none p-2 rounded text-sm" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

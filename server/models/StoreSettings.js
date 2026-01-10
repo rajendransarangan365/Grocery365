@@ -8,7 +8,9 @@ const storeSettingsSchema = new mongoose.Schema({
     email: { type: String, default: '' },
     website: { type: String, default: '' },
     gstin: { type: String, default: '' },
-    footerMessage: { type: String, default: 'Thank you for shopping with us!' }
+    footerMessage: { type: String, default: 'Thank you for shopping with us!' },
+    whatsappHeader: { type: String, default: '🛒 Bill from {storeName}' },
+    whatsappFooter: { type: String, default: 'Thank you for shopping with us!' }
 }, { timestamps: true });
 
 const StoreSettings = mongoose.model('StoreSettings', storeSettingsSchema);

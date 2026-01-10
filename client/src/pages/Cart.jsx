@@ -91,13 +91,23 @@ const Cart = () => {
     };
 
     const handleShareWhatsApp = () => {
-        let text = `*🧾 Bill from ${storeSettings.storeName}*\n\n`;
+        // Construct Header
+        let header = storeSettings.whatsappHeader
+            ? storeSettings.whatsappHeader.replace('{storeName}', storeSettings.storeName)
+            : `*🧾 Bill from ${storeSettings.storeName}*`;
+
+        let text = `${header}\n\n`;
+
         verifiedItems.forEach(item => {
             text += `${item.name} x ${item.qty}${item.unit || ''} : ₹${(item.sellingPrice * item.qty).toFixed(2)}\n`;
         });
+
         text += `\n*Total: ₹${totalAmount.toFixed(2)}*`;
         text += `\nPayment: ${paymentMethod}`;
-        text += `\n\n_${storeSettings.footerMessage}_`;
+
+        // Construct Footer
+        const footer = storeSettings.whatsappFooter || storeSettings.footerMessage || 'Thank you!';
+        text += `\n\n_${footer}_`;
 
         let url = `https://wa.me/?text=${encodeURIComponent(text)}`;
         if (customerId) {
@@ -201,7 +211,7 @@ const Cart = () => {
         doc.save(`Invoice_${Date.now()}.pdf`);
     };
 
-    const handleFinalCheckout = async () => {
+    const handleFinalCheckout = async (shouldPrint = true) => {
         try {
             const saleData = {
                 products: verifiedItems.map(item => ({
@@ -215,19 +225,17 @@ const Cart = () => {
 
             await axios.post('/api/sales', saleData);
 
-            // Generate PDF
-            generateBill(saleData);
+            // Generate PDF only if requested
+            if (shouldPrint) {
+                generateBill(saleData);
+            }
 
             // Clean up: remove purchased items from global cart
-            // If user unchecked some, they remain in cart? 
-            // Usually simpler to just verify what is being bought and clear those.
-            // Or clear all? Let's clear verify ones.
             verifiedItems.forEach(item => dispatch(removeFromCart(item._id)));
 
-            toast.success('Order Placed! 🚀');
+            toast.success(shouldPrint ? 'Order Placed & Printing... 🖨️' : 'Order Saved! 💾');
             setIsCheckoutOpen(false);
             if (verifiedItems.length === items.length) {
-                // If everything verified was bought, empty => go to order
                 navigate('/order');
             }
         } catch (error) {
@@ -425,13 +433,22 @@ const Cart = () => {
                                 <Smartphone size={20} />
                                 Share Bill on WhatsApp
                             </button>
-                            <button
-                                onClick={handleFinalCheckout}
-                                className="w-full py-4 bg-black text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-800 active:scale-95 transition-transform"
-                            >
-                                <Printer size={20} />
-                                Confirm & Print
-                            </button>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => handleFinalCheckout(false)}
+                                    className="w-full py-4 bg-gray-100 text-gray-900 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+                                >
+                                    <CheckCircle size={20} />
+                                    Save Only
+                                </button>
+                                <button
+                                    onClick={() => handleFinalCheckout(true)}
+                                    className="w-full py-4 bg-black text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-800 active:scale-95 transition-transform"
+                                >
+                                    <Printer size={20} />
+                                    Print Bill
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

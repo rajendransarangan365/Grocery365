@@ -37,7 +37,10 @@ export const updateSettings = async (req, res) => {
         settings.email = req.body.email || settings.email;
         settings.website = req.body.website || settings.website;
         settings.gstin = req.body.gstin || settings.gstin;
+        settings.gstin = req.body.gstin || settings.gstin;
         settings.footerMessage = req.body.footerMessage || settings.footerMessage;
+        settings.whatsappHeader = req.body.whatsappHeader || settings.whatsappHeader;
+        settings.whatsappFooter = req.body.whatsappFooter || settings.whatsappFooter;
 
         const updatedSettings = await settings.save();
         res.json(updatedSettings);
