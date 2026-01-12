@@ -68,7 +68,9 @@ const Layout = () => {
                 <nav className="flex-1 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
                     <SidebarItem to="/" icon={LayoutDashboard} label="Dashboard" />
                     <SidebarItem to="/order" icon={ShoppingCart} label="Easy Order" />
-                    <SidebarItem to="/cart" icon={Menu} label="Current Order" />
+                    <div id="cart-icon-desktop">
+                        <SidebarItem to="/cart" icon={Menu} label="Current Order" />
+                    </div>
                     <SidebarItem to="/history" icon={History} label="History" />
                     <div className="my-4 border-t border-gray-100 mx-6 shrink-0"></div>
                     <SidebarItem to="/products" icon={Package} label="Products" />
@@ -100,7 +102,7 @@ const Layout = () => {
                     <h1 className="text-lg font-bold tracking-tight">{getPageTitle()}</h1>
                     <div className="flex gap-4 text-gray-700">
                         <Bell size={22} />
-                        <NavLink to="/cart" className="relative">
+                        <NavLink to="/cart" className="relative" id="cart-icon-mobile-top">
                             <ShoppingCart size={22} />
                             {cartItems.length > 0 && (
                                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-600 rounded-full border-2 border-white"></span>
@@ -118,7 +120,9 @@ const Layout = () => {
                 <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 h-16 flex items-center justify-around z-50 px-1 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                     <MobileNavItem to="/" icon={LayoutDashboard} label="Home" />
                     <MobileNavItem to="/order" icon={ShoppingCart} label="Shop" />
-                    <MobileNavItem to="/cart" icon={ClipboardCheck} label="Cart" showBadge={cartItems.length > 0} />
+                    <div id="cart-icon-mobile">
+                        <MobileNavItem to="/cart" icon={ClipboardCheck} label="Cart" showBadge={cartItems.length > 0} />
+                    </div>
                     <MobileNavItem to="/products" icon={Package} label="Stock" />
                     <MobileNavItem to="/settings" icon={ClipboardList} label="Settings" />
                 </nav>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts } from '../store/productSlice';
 import { addToCart } from '../store/cartSlice';
+import { flyToCart } from '../utils/animationUtils';
 import { Search, Plus, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -52,6 +53,10 @@ const EasyOrder = () => {
         }
 
         dispatch(addToCart({ ...product, qty: quantity }));
+
+        // Trigger Animation
+        flyToCart(`product-img-${product._id}`, 'cart-icon-desktop');
+
         toast.success(`Added ${quantity} ${product.unit || ''} of ${product.name} to order! 🛒`);
         setExpandedId(null); // Close after adding
     };
@@ -125,6 +130,7 @@ const EasyOrder = () => {
                                     {/* Thumbnail */}
                                     <div className="w-16 h-16 bg-gray-50 rounded-xl flex-shrink-0 overflow-hidden relative">
                                         <img
+                                            id={`product-img-${product._id}`} // ID for animation target
                                             src={product.image && (product.image.startsWith('http') ? product.image : `/${product.image.replace(/\\/g, '/')}`)}
                                             alt={product.name}
                                             className="w-full h-full object-cover"

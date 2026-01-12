@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, AlertTriangle, Package, Bell, ArrowUpRight, DollarSign, Activity, Phone } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Package, Bell, ArrowUpRight, IndianRupee, Activity, Phone, Hand } from 'lucide-react';
 import axios from 'axios';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -114,7 +114,7 @@ const Dashboard = () => {
                                 </div>
                             </div>
                             <div className="bg-gray-800 p-2 rounded-lg">
-                                <DollarSign size={24} className="text-white" />
+                                <IndianRupee size={24} className="text-white" />
                             </div>
                         </div>
                     </div>
@@ -182,7 +182,11 @@ const Dashboard = () => {
                 {lowStock.length > 0 && (
                     <div className="animate-in slide-in-from-bottom-4 duration-500">
                         <h3 className="text-lg font-bold text-gray-900 mb-4 px-2 flex items-center gap-2">
-                            <AlertTriangle size={20} className="text-red-500" /> Action Required
+                            <Hand size={24} className="text-red-500 animate-bounce mr-1" />
+                            <span className="flex items-center gap-2">
+                                <AlertTriangle size={20} className="text-red-500" />
+                                Action Required
+                            </span>
                         </h3>
                         <div className="grid gap-3">
                             {lowStock.map(p => (
@@ -329,6 +333,14 @@ const Dashboard = () => {
                                 <p className="text-sm text-gray-500 font-medium">For {selectedProduct.name}</p>
                             </div>
                             <button onClick={() => setSelectedProduct(null)} className="bg-gray-100 p-2 rounded-full hover:bg-gray-200 font-bold text-gray-600">✕</button>
+                        </div>
+
+                        {/* Urgency Banner */}
+                        <div className="bg-red-50 border border-red-100 p-3 rounded-xl mb-4 flex items-center justify-center gap-2 animate-pulse">
+                            <AlertTriangle size={18} className="text-red-500" />
+                            <span className="text-red-600 font-bold text-xs uppercase tracking-wider">
+                                Stock Emptying Soon! Please Refill
+                            </span>
                         </div>
 
                         <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">

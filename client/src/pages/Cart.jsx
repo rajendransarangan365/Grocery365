@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { parseMessageText } from '../utils/stringUtils';
+import { triggerSuccessAnimation } from '../utils/confetti';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateQuantity, removeFromCart, clearCart } from '../store/cartSlice';
-import { Trash2, CheckCircle, Smartphone, Printer, ArrowRight } from 'lucide-react';
+import { Share2, Printer, Save, Trash2, X, Plus, Minus, Search, CreditCard, Banknote, User, Smartphone, MapPin, ArrowRight, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -287,6 +288,7 @@ const Cart = () => {
             // Clean up: remove purchased items from global cart
             verifiedItems.forEach(item => dispatch(removeFromCart(item._id)));
 
+            triggerSuccessAnimation(); // Trigger "Cash Flying" animation
             toast.success(shouldPrint ? 'Order Placed & Printing... 🖨️' : 'Order Saved! 💾');
             setIsCheckoutOpen(false);
             if (verifiedItems.length === items.length) {
