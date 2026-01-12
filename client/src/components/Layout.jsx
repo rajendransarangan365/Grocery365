@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingCart, Package, Users, Truck, LogOut, UtensilsCrossed, Search, User, ClipboardList, Menu, Bell, History } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { LayoutDashboard, ShoppingCart, Package, Users, Truck, LogOut, UtensilsCrossed, Search, User, ClipboardList, Menu, Bell, History, ClipboardCheck } from 'lucide-react';
 
 const SidebarItem = ({ to, icon: Icon, label }) => (
     <NavLink
@@ -17,24 +18,30 @@ const SidebarItem = ({ to, icon: Icon, label }) => (
     </NavLink>
 );
 
-const MobileNavItem = ({ to, icon: Icon, label }) => (
+const MobileNavItem = ({ to, icon: Icon, label, showBadge }) => (
     <NavLink
         to={to}
         className={({ isActive }) =>
-            `flex flex-col items-center justify-center w-full py-2 transition-colors duration-200 ${isActive
+            `relative flex flex-col items-center justify-center w-full py-2 transition-colors duration-200 ${isActive
                 ? 'text-black'
                 : 'text-gray-400 hover:text-gray-600'
             }`
         }
     >
         {({ isActive }) => (
-            <Icon size={isActive ? 26 : 24} strokeWidth={isActive ? 2.5 : 2} />
+            <>
+                <Icon size={isActive ? 26 : 24} strokeWidth={isActive ? 2.5 : 2} />
+                {showBadge && (
+                    <span className="absolute top-1.5 right-[calc(50%-12px)] w-2.5 h-2.5 bg-red-600 rounded-full border-2 border-white animate-pulse"></span>
+                )}
+            </>
         )}
     </NavLink>
 );
 
 const Layout = () => {
     const location = useLocation();
+    const { items: cartItems } = useSelector(state => state.cart);
 
     // Determine Page Title based on path
     const getPageTitle = () => {
@@ -95,7 +102,9 @@ const Layout = () => {
                         <Bell size={22} />
                         <NavLink to="/cart" className="relative">
                             <ShoppingCart size={22} />
-                            {/* Dot indicator could go here */}
+                            {cartItems.length > 0 && (
+                                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-600 rounded-full border-2 border-white"></span>
+                            )}
                         </NavLink>
                     </div>
                 </header>
@@ -106,11 +115,12 @@ const Layout = () => {
                 </main>
 
                 {/* Mobile Bottom Navigation (Fixed) */}
-                <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 h-16 flex items-center justify-around z-50 px-2 pb-safe">
+                <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 h-16 flex items-center justify-around z-50 px-1 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                     <MobileNavItem to="/" icon={LayoutDashboard} label="Home" />
-                    <MobileNavItem to="/order" icon={ShoppingCart} label="Order" />
+                    <MobileNavItem to="/order" icon={ShoppingCart} label="Shop" />
+                    <MobileNavItem to="/cart" icon={ClipboardCheck} label="Cart" showBadge={cartItems.length > 0} />
                     <MobileNavItem to="/products" icon={Package} label="Stock" />
-                    <MobileNavItem to="/customers" icon={Users} label="People" />
+                    <MobileNavItem to="/settings" icon={ClipboardList} label="Settings" />
                 </nav>
             </div>
         </div>

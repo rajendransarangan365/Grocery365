@@ -1,9 +1,30 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+const loadState = () => {
+    try {
+        const serializedState = localStorage.getItem('cartItems');
+        if (serializedState === null) {
+            return [];
+        }
+        return JSON.parse(serializedState);
+    } catch (err) {
+        return [];
+    }
+};
+
+const saveState = (items) => {
+    try {
+        const serializedState = JSON.stringify(items);
+        localStorage.setItem('cartItems', serializedState);
+    } catch {
+        // ignore write errors
+    }
+};
+
 const cartSlice = createSlice({
     name: 'cart',
     initialState: {
-        items: [],
+        items: loadState(),
     },
     reducers: {
         addToCart: (state, action) => {
@@ -11,16 +32,15 @@ const cartSlice = createSlice({
             const quantityToAdd = action.payload.qty !== undefined ? Number(action.payload.qty) : 1;
 
             if (existingItem) {
-                // Ensure we work with numbers to avoid string concatenation issues
                 existingItem.qty = Number(existingItem.qty) + quantityToAdd;
-                // Optional: Limit decimals to avoid floating point errors (e.g. 0.1 + 0.2)
-                // existingItem.qty = Math.round(existingItem.qty * 100) / 100;
             } else {
                 state.items.push({ ...action.payload, qty: quantityToAdd });
             }
+            saveState(state.items);
         },
         removeFromCart: (state, action) => {
             state.items = state.items.filter(item => item._id !== action.payload);
+            saveState(state.items);
         },
         updateQuantity: (state, action) => {
             const { id, qty } = action.payload;
@@ -28,9 +48,11 @@ const cartSlice = createSlice({
             if (item) {
                 item.qty = qty;
             }
+            saveState(state.items);
         },
         clearCart: (state) => {
             state.items = [];
+            saveState(state.items);
         },
     },
 });
