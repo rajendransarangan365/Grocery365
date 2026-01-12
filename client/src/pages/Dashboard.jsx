@@ -247,7 +247,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Recharts Area Chart */}
-                <div className="h-64 w-full -ml-4">
+                <div className="h-64 w-full">
                     {chartData.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%" minHeight={200}>
                             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>

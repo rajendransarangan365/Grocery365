@@ -57,20 +57,20 @@ const Layout = () => {
     };
 
     return (
-        <div className="flex h-[100dvh] bg-gray-50 font-sans overflow-hidden">
+        <div className="flex min-h-screen bg-gray-50 font-sans">
             {/* Desktop Sidebar (Left Rail) */}
-            <aside className="hidden md:flex w-72 flex-col bg-white border-r border-gray-100 h-full fixed left-0 top-0 z-30">
-                <div className="p-8 pb-10 flex items-center gap-3">
+            <aside className="hidden md:flex w-72 flex-col bg-white border-r border-gray-100 h-screen sticky top-0 z-30">
+                <div className="p-8 pb-10 flex items-center gap-3 shrink-0">
                     <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white font-black text-xl">G</div>
                     <h1 className="text-2xl font-black tracking-tighter">Grocery365</h1>
                 </div>
 
-                <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
+                <nav className="flex-1 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
                     <SidebarItem to="/" icon={LayoutDashboard} label="Dashboard" />
                     <SidebarItem to="/order" icon={ShoppingCart} label="Easy Order" />
                     <SidebarItem to="/cart" icon={Menu} label="Current Order" />
                     <SidebarItem to="/history" icon={History} label="History" />
-                    <div className="my-4 border-t border-gray-100 mx-6"></div>
+                    <div className="my-4 border-t border-gray-100 mx-6 shrink-0"></div>
                     <SidebarItem to="/products" icon={Package} label="Products" />
                     <SidebarItem to="/customers" icon={Users} label="Customers" />
                     <SidebarItem to="/distributors" icon={Truck} label="Distributors" />
@@ -79,7 +79,7 @@ const Layout = () => {
                     </div>
                 </nav>
 
-                <div className="p-6 border-t border-gray-100">
+                <div className="p-6 border-t border-gray-100 shrink-0">
                     <div className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors">
                         <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-500">
                             <User size={20} />
@@ -93,10 +93,10 @@ const Layout = () => {
             </aside>
 
             {/* Main Content Area */}
-            <div className="flex-1 md:ml-72 flex flex-col h-full bg-gray-50">
+            <div className="flex-1 flex flex-col min-w-0 bg-gray-50">
 
                 {/* Mobile Top Bar (App Bar) */}
-                <header className="md:hidden sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 h-14 flex items-center justify-between">
+                <header className="md:hidden sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 h-14 flex items-center justify-between shrink-0">
                     <h1 className="text-lg font-bold tracking-tight">{getPageTitle()}</h1>
                     <div className="flex gap-4 text-gray-700">
                         <Bell size={22} />
@@ -110,7 +110,7 @@ const Layout = () => {
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-y-auto w-full max-w-7xl mx-auto px-4 py-6 md:px-8 md:py-8 pb-24 md:pb-0">
+                <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-6 md:px-8 md:py-8 pb-24 md:pb-8">
                     <Outlet />
                 </main>
 

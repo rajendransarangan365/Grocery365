@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { parseMessageText } from '../utils/stringUtils';
 import axios from 'axios';
 import { Save, Building, Phone, Mail, Globe, FileText, Type, Smartphone, Printer } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -220,7 +221,7 @@ const Settings = () => {
 
                                 <div className="text-sm text-gray-900 whitespace-pre-wrap leading-relaxed font-sans">
                                     <p className="font-bold mb-2">
-                                        {settings.whatsappHeader ? settings.whatsappHeader.replace('{storeName}', settings.storeName || 'Store') : `🧾 Bill from ${settings.storeName}`}
+                                        {parseMessageText(settings.whatsappHeader ? settings.whatsappHeader.replace('{storeName}', settings.storeName || 'Store') : `🧾 Bill from ${settings.storeName}`)}
                                     </p>
                                     <div className="space-y-1 mb-2 text-gray-800">
                                         <div className="flex justify-between"><span>Milk Bikis x 2</span><span>₹20.00</span></div>
@@ -231,7 +232,7 @@ const Settings = () => {
                                         <span>₹40.00</span>
                                     </div>
                                     <p className="text-xs text-gray-500 mt-2">Payment: Cash</p>
-                                    <p className="mt-3 italic text-gray-600 text-xs text-center border-t border-gray-100 pt-2">{settings.whatsappFooter || 'Thank you!'}</p>
+                                    <p className="mt-3 italic text-gray-600 text-xs text-center border-t border-gray-100 pt-2">{parseMessageText(settings.whatsappFooter || 'Thank you!')}</p>
                                 </div>
                                 <div className="text-[10px] text-gray-400 text-right mt-1">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                             </div>
@@ -243,7 +244,7 @@ const Settings = () => {
                             <div>
                                 <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Header Template</label>
                                 <input name="whatsappHeader" value={settings.whatsappHeader || ''} onChange={handleChange} placeholder="e.g. 🛒 Bill from {storeName}" className="w-full bg-gray-50 border-none p-2 rounded text-sm disabled:opacity-50" />
-                                <p className="text-[10px] text-gray-400 mt-1">Use <code>{'{storeName}'}</code> to insert your store name.</p>
+                                <p className="text-[10px] text-gray-400 mt-1">Use <code>{'{storeName}'}</code> for store name. Use <code>U+1F601</code> for emojis (😁).</p>
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Footer Message</label>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { parseMessageText } from '../utils/stringUtils';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateQuantity, removeFromCart, clearCart } from '../store/cartSlice';
 import { Trash2, CheckCircle, Smartphone, Printer, ArrowRight } from 'lucide-react';
@@ -93,7 +94,7 @@ const Cart = () => {
     const handleShareWhatsApp = () => {
         // Construct Header
         let header = storeSettings.whatsappHeader
-            ? storeSettings.whatsappHeader.replace('{storeName}', storeSettings.storeName)
+            ? parseMessageText(storeSettings.whatsappHeader.replace('{storeName}', storeSettings.storeName))
             : `*🧾 Bill from ${storeSettings.storeName}*`;
 
         let text = `${header}\n\n`;
@@ -106,17 +107,18 @@ const Cart = () => {
         text += `\nPayment: ${paymentMethod}`;
 
         // Construct Footer
-        const footer = storeSettings.whatsappFooter || storeSettings.footerMessage || 'Thank you!';
+        const footer = parseMessageText(storeSettings.whatsappFooter || storeSettings.footerMessage || 'Thank you!');
         text += `\n\n_${footer}_`;
 
-        let url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
         if (customerId) {
             const cust = customers.find(c => c._id === customerId);
             if (cust && cust.phone) {
-                url = `https://wa.me/${cust.phone}?text=${encodeURIComponent(text)}`;
+                url = `https://api.whatsapp.com/send?phone=${cust.phone}&text=${encodeURIComponent(text)}`;
             }
         }
         window.open(url, '_blank');
+        handleFinalCheckout(false); // Auto-save after sharing
     };
 
     const generateBill = (saleData) => {
@@ -336,7 +338,7 @@ const Cart = () => {
                         {/* Image */}
                         <div className="w-14 h-14 rounded-xl bg-white flex-shrink-0 p-1 mr-4 overflow-hidden border border-gray-100">
                             <img
-                                src={`/${item.image && item.image.replace(/\\/g, '/')}`}
+                                src={item.image && (item.image.startsWith('http') ? item.image : `/${item.image.replace(/\\/g, '/')}`)}
                                 alt={item.name}
                                 className="w-full h-full object-cover rounded-lg"
                                 onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Food' }}
