@@ -9,7 +9,10 @@ const productSchema = new mongoose.Schema({
     // distributorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Distributor' }, // moved to supplyOptions
     supplyOptions: [{
         distributor: { type: mongoose.Schema.Types.ObjectId, ref: 'Distributor' },
-        costPrice: { type: Number, required: true }
+        costPrice: { type: Number, required: true },
+        stock: { type: Number, default: 0 },
+        mfgDate: { type: Date },
+        expDate: { type: Date }
     }],
     category: { type: String }, // Optional categorization
 }, { timestamps: true });

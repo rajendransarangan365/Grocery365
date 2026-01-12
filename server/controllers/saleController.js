@@ -21,26 +21,49 @@ export const createSale = async (req, res) => {
                 return res.status(400).json({ message: `Insufficient stock for ${product.name}` });
             }
 
+            // FIFO Stock Deduction Logic
+            let remainingQtyToDeduct = item.qty;
+            let totalCostForItems = 0;
+
+            if (product.supplyOptions && product.supplyOptions.length > 0) {
+                for (const option of product.supplyOptions) {
+                    if (remainingQtyToDeduct <= 0) break;
+
+                    const availableStock = option.stock || 0;
+                    if (availableStock > 0) {
+                        const take = Math.min(availableStock, remainingQtyToDeduct);
+
+                        // Deduct from this batch
+                        option.stock -= take;
+                        remainingQtyToDeduct -= take;
+
+                        // Add cost
+                        totalCostForItems += take * option.costPrice;
+                    }
+                }
+            }
+
+            // Fallback if supplyOptions didn't have enough specific stock (e.g. legacy data or mismatch)
+            // We use the first option's cost (or selling price if no cost found - unlikely) for the remainder
+            if (remainingQtyToDeduct > 0) {
+                const fallbackCost = product.supplyOptions?.[0]?.costPrice || 0;
+                totalCostForItems += remainingQtyToDeduct * fallbackCost;
+            }
+
+            // Update global qty
             product.qty -= item.qty;
             await product.save();
 
             totalAmount += product.sellingPrice * item.qty;
 
-            // Determine cost price (Avg or First Option) for profit calc
-            // If strictly needed, we could pick the specific distributor used, but for now we take the highest cost (conservative profit) or first.
-            let determinedCost = 0;
-            if (product.supplyOptions && product.supplyOptions.length > 0) {
-                // Use the first option's cost as default, or average. 
-                // Let's use the maximum cost to be safe on profit margins? Or just the first. 
-                // Let's go with the first option for simplicity as primary supplier.
-                determinedCost = product.supplyOptions[0].costPrice;
-            }
+            // Calculate average cost price for this specific sale item
+            const effectiveCostPrice = totalCostForItems / item.qty;
 
             saleProducts.push({
                 product: product._id,
                 qty: item.qty,
                 sellingPrice: product.sellingPrice,
-                costPrice: determinedCost
+                costPrice: effectiveCostPrice
             });
         }
 
